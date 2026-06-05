@@ -27,7 +27,7 @@ const isHome = pathname === "/";
   id="site-header"
   data-home={isHome ? "true" : "false"}
   class:list={[
-    "header z-30",
+    "header z-50",
     settings.sticky_header && "fixed top-0 left-0 right-0",
     !isHome && "header-solid",
   ]}
@@ -195,4 +195,3 @@ const isHome = pathname === "/";
   document.addEventListener("astro:page-load", initHeaderContrast);
   initHeaderContrast();
 </script>
-

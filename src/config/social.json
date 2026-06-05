@@ -16,6 +16,11 @@
       "link": "https://www.github.com/"
     },
     {
+      "name": "telegram",
+      "icon": "FaTelegram",
+      "link": "https://t.me/godot_italy"
+    },
+    {
       "name": "linkedin",
       "icon": "FaLinkedin",
       "link": "https://www.linkedin.com/"
