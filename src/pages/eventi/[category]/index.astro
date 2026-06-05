@@ -1,0 +1,122 @@
+---
+import Base from "@/layouts/Base.astro";
+import { getCollection, render } from "astro:content";
+import { sortByEventDate, filterByCategory, getCategoryIndexDoc, getCleanEventId } from "@/lib/utils/sortFunctions.ts";
+
+export async function getStaticPaths() {
+  const allEvents = await getCollection("eventi", ({ data }) => !data.draft);
+
+  // Get unique categories from all events
+  const categories = [...new Set(allEvents.map((e) => e.data.category))];
+
+  return categories.map((category) => ({
+    params: { category },
+  }));
+}
+
+const { category } = Astro.params;
+
+const allEvents = await getCollection("eventi", ({ data }) => !data.draft);
+const categoryEvents = filterByCategory(allEvents, category as string);
+const indexDoc = getCategoryIndexDoc(allEvents, category as string);
+
+if (!indexDoc) {
+  throw new Error(`No index document found for ${category} category`);
+}
+
+const events = sortByEventDate(categoryEvents.filter((e) => !e.id.startsWith("-")));
+const [latestEvent, ...archiveEvents] = events;
+const { Content } = await render(indexDoc);
+
+const latestEventDate = latestEvent?.data.event_date
+  ? new Date(latestEvent.data.event_date)
+  : null;
+---
+
+<Base
+  title={indexDoc.data.title}
+  meta_title={indexDoc.data.meta_title}
+  image={indexDoc.data.image}
+  description={indexDoc.data.description}
+>
+  <section class="section-sm">
+    <div class="container">
+      <div class="row justify-center">
+        <div class="md:col-10 lg:col-8">
+          <div class="content mb-12">
+            <Content />
+          </div>
+
+          {latestEvent && (
+            <section class="mb-12 rounded-3xl border border-primary/20 bg-primary/5 p-8 dark:border-darkmode-primary/30 dark:bg-darkmode-primary/10">
+              <p class="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary dark:text-darkmode-primary">
+                Ultimo evento
+              </p>
+              <h2 class="mb-4 text-3xl font-semibold">
+                <a href={`/eventi/${category}/${getCleanEventId(latestEvent.id)}`}>{latestEvent.data.title}</a>
+              </h2>
+              <p class="mb-4 text-text/80 dark:text-darkmode-text/80">
+                {latestEvent.data.description}
+              </p>
+              <p class="mb-6 text-sm text-text/70 dark:text-darkmode-text/70">
+                {latestEventDate
+                  ? latestEventDate.toLocaleDateString("it-IT", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "Data da definire"}
+                {latestEvent.data.location ? ` · ${latestEvent.data.location}` : ""}
+              </p>
+              <a class="btn btn-primary btn-sm" href={`/eventi/${category}/${getCleanEventId(latestEvent.id)}`}>
+                Leggi l'articolo
+              </a>
+            </section>
+          )}
+
+          <h2 class="mb-4 text-3xl font-semibold">Archivio</h2>
+          <div class="grid gap-8">
+            {archiveEvents.map((event) => {
+              const { title, description, event_date, series, location, featured } = event.data;
+              return (
+                <article class="rounded-2xl border border-border bg-light p-8 dark:border-darkmode-border dark:bg-darkmode-light">
+                  <div class="mb-4 flex flex-wrap items-center gap-3 text-sm uppercase tracking-wide text-text/70 dark:text-darkmode-text/70">
+                    {series && <span>{series}</span>}
+                    {location && (
+                      <>
+                        {series && <span>•</span>}
+                        <span>{location}</span>
+                      </>
+                    )}
+                    {featured && (
+                      <span class="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white dark:text-text-dark">
+                        In evidenza
+                      </span>
+                    )}
+                  </div>
+                  <h2 class="mb-3 text-2xl font-semibold">
+                    <a href={`/eventi/${category}/${getCleanEventId(event.id)}`}>{title}</a>
+                  </h2>
+                  <p class="mb-4 text-sm text-text/70 dark:text-darkmode-text/70">
+                    {event_date
+                      ? new Date(event_date).toLocaleDateString("it-IT", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      : "Data da definire"}
+                  </p>
+                  <p class="mb-6">{description}</p>
+                  <a class="btn btn-outline-primary btn-sm" href={`/eventi/${category}/${getCleanEventId(event.id)}`}>
+                    Leggi l'articolo
+                  </a>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+

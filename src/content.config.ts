@@ -57,6 +57,26 @@ const pagesCollection = defineCollection({
   }),
 });
 
+// Events collection schema - loads from all category subdirectories
+const eventsCollection = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "src/content/eventi" }),
+  schema: z.object({
+    title: z.string(),
+    meta_title: z.string().optional(),
+    description: z.string(),
+    date: z.coerce.date().optional(),
+    event_date: z.coerce.date().optional(),
+    image: z.string().optional(),
+    category: z.enum(["serate", "jam", "conferenza"]).default("serate"),
+    series: z.string().optional(),
+    location: z.string().default("Discord"),
+    youtube_id: z.string().optional(),
+    youtube_title: z.string().optional(),
+    featured: z.boolean().default(false),
+    draft: z.boolean().optional(),
+  }),
+});
+
 // about collection schema
 const aboutCollection = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "src/content/about" }),
@@ -150,6 +170,7 @@ export const collections = {
   blog: blogCollection,
   authors: authorsCollection,
   pages: pagesCollection,
+  eventi: eventsCollection,
   about: aboutCollection,
   contact: contactCollection,
 

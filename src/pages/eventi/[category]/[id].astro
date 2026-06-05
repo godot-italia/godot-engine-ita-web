@@ -1,0 +1,65 @@
+---
+import Base from "@/layouts/Base.astro";
+import { getCollection, render } from "astro:content";
+import { filterByCategory, getCleanEventId } from "@/lib/utils/sortFunctions.ts";
+
+export async function getStaticPaths() {
+  const allEvents = await getCollection("eventi", ({ data }) => !data.draft);
+  const eventPages = allEvents.filter((e) => !e.id.startsWith("-"));
+
+  return eventPages.map((event) => ({
+    params: { category: event.data.category, id: getCleanEventId(event.id) },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props;
+const { title, meta_title, description, image } = event.data;
+const { Content } = await render(event);
+const eventDate = event.data.event_date ? new Date(event.data.event_date) : null;
+---
+
+<Base
+  title={title}
+  meta_title={meta_title}
+  description={description}
+  image={image}
+>
+  <section class="section pt-6">
+    <div class="container">
+      <div class="row justify-center">
+        <article class="lg:col-10">
+          <div class="mb-6 flex flex-wrap items-center gap-3 text-sm uppercase tracking-[0.2em] text-text/70 dark:text-darkmode-text/70">
+            {event.data.series && <span>{event.data.series}</span>}
+            <span>•</span>
+            <span>{event.data.location}</span>
+            {eventDate && (
+              <>
+                <span>•</span>
+                <span>{eventDate.toLocaleDateString("it-IT", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}</span>
+              </>
+            )}
+          </div>
+
+          <h1 class="mb-4 text-4xl font-semibold md:text-5xl">{title}</h1>
+          <p class="mb-8 text-lg text-text/80 dark:text-darkmode-text/80">{description}</p>
+
+          <div class="content">
+            <Content />
+          </div>
+
+          <div class="mt-12 border-t border-border pt-8 dark:border-darkmode-border">
+            <a href={`/eventi/${event.data.category}`} class="btn btn-outline-primary">
+              ← Torna alla categoria
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</Base>
+

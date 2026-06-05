@@ -1,5 +1,5 @@
 .header {
-  @apply py-6 transition-colors duration-300;
+  @apply py-6 transition-colors duration-300  backdrop-blur-sm;
   font-family: var(--header-font-family);
 }
 

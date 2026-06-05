@@ -1,0 +1,99 @@
+---
+import Base from "@/layouts/Base.astro";
+import { getCollection, render } from "astro:content";
+import { sortByEventDate, getCleanEventId, filterByCategory, getCategoryIndexDoc } from "@/lib/utils/sortFunctions.ts";
+
+const allEvents = await getCollection("eventi", ({ data }) => !data.draft);
+
+// Get unique categories
+const categories = [...new Set(allEvents.map((e) => e.data.category))];
+
+// Group events by category with descriptions
+const eventsByCategory = await Promise.all(
+  categories.map(async (category) => {
+    const categoryEvents = filterByCategory(allEvents, category);
+    const indexDoc = getCategoryIndexDoc(allEvents, category);
+    const { Content } = indexDoc ? await render(indexDoc) : { Content: null };
+
+    const events = sortByEventDate(categoryEvents.filter((e) => !e.id.startsWith("-")));
+
+    return {
+      category,
+      indexDoc,
+      Content,
+      events,
+    };
+  })
+);
+---
+
+<Base
+  title="Eventi"
+  meta_title="Eventi | Godot Engine Italia"
+  description="Tutti gli eventi della community Godot Engine Italia: Serate Godot, Jam e Conferenze."
+>
+  <section class="section-sm">
+    <div class="container">
+      <div class="row justify-center">
+        <div class="md:col-10 lg:col-8">
+          <h1 class="mb-12 text-center text-4xl font-bold">Eventi della Community</h1>
+
+          {eventsByCategory.map(({ category, indexDoc, Content, events }) => (
+            <div class="mb-16">
+              {/* Category header with archive link */}
+              <div class="mb-6">
+                <h2 class="text-3xl font-semibold capitalize">
+                  {category}
+                  <a href={`/eventi/${category}`} class="ml-3 text-lg font-normal text-primary hover:underline dark:text-darkmode-primary">
+                    (archivio)
+                  </a>
+                </h2>
+              </div>
+
+              {/* Category description */}
+              {Content && (
+                <div class="prose prose-sm dark:prose-invert mb-8 max-w-none text-text/80 dark:text-darkmode-text/80">
+                  <Content />
+                </div>
+              )}
+
+              {/* Events list */}
+              <div class="grid gap-6">
+                {events.filter((event) => !getCleanEventId(event.id).startsWith("-")).slice(0, 3).map((event) => {
+                  const eventDate = event.data.event_date ? new Date(event.data.event_date) : null;
+                  return (
+                    <article class="rounded-lg border border-border bg-light p-6 transition hover:shadow-md dark:border-darkmode-border dark:bg-darkmode-light">
+                      <div class="mb-3 flex flex-wrap items-center gap-2 text-xs uppercase tracking-wide text-text/70 dark:text-darkmode-text/70">
+                        {event.data.location && <span>{event.data.location}</span>}
+                        {eventDate && (
+                          <>
+                            <span>•</span>
+                            <span>{eventDate.toLocaleDateString("it-IT", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}</span>
+                          </>
+                        )}
+                      </div>
+                      <h3 class="mb-2 text-lg font-semibold">
+                        <a href={`/eventi/${category}/${getCleanEventId(event.id)}`}>{event.data.title}</a>
+                      </h3>
+                      <p class="mb-4 text-sm text-text/80 dark:text-darkmode-text/80">
+                        {event.data.description}
+                      </p>
+                      <a href={`/eventi/${category}/${getCleanEventId(event.id)}`} class="text-sm font-medium text-primary hover:underline dark:text-darkmode-primary">
+                        Leggi →
+                      </a>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
