@@ -1,6 +1,16 @@
 {
   "main": [
     {
+      "name": "discord",
+      "icon": "FaDiscord",
+      "link": "https://discord.gg/XB5eHm6WT"
+    },
+    {
+      "name": "telegram",
+      "icon": "FaTelegram",
+      "link": "https://t.me/+-K3hOQLBXZM5NGVk"
+    },
+    {
       "name": "facebook",
       "icon": "FaFacebook",
       "link": "https://www.facebook.com/"
@@ -14,11 +24,6 @@
       "name": "github",
       "icon": "FaGithub",
       "link": "https://www.github.com/"
-    },
-    {
-      "name": "telegram",
-      "icon": "FaTelegram",
-      "link": "https://t.me/godot_italy"
     },
     {
       "name": "linkedin",
