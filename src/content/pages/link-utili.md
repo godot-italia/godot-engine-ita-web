@@ -13,7 +13,3 @@ draft: false
 | Repository GitHub | https://github.com/godotengine/godot | Codice sorgente | EN |
 | Forum ufficiale | https://forum.godotengine.org | Community | EN |
 
-## Da aggiungere per la community italiana
-
-Inserisci qui i collegamenti della community di Godot Engine Italia, ad esempio i canali Discord, Telegram o i profili social ufficiali.
-

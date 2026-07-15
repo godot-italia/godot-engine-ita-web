@@ -24,7 +24,7 @@ if (!indexDoc) {
   throw new Error(`No index document found for ${category} category`);
 }
 
-const events = sortByEventDate(categoryEvents.filter((e) => !e.id.startsWith("-")));
+const events = sortByEventDate(categoryEvents.filter((e) => !e.id.endsWith("-index")));
 const [latestEvent, ...archiveEvents] = events;
 const { Content } = await render(indexDoc);
 
@@ -107,7 +107,7 @@ const latestEventDate = latestEvent?.data.event_date
                       : "Data da definire"}
                   </p>
                   <p class="mb-6">{description}</p>
-                  <a class="btn btn-outline-primary btn-sm" href={`/eventi/${category}/${getCleanEventId(event.id)}`}>
+                  <a class="btn btn-primary btn-sm" href={`/eventi/${category}/${getCleanEventId(event.id)}`}>
                     Leggi l'articolo
                   </a>
                 </article>
